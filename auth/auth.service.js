@@ -1,17 +1,15 @@
 import bcryptjs from "bcryptjs"
 import jwt from "jsonwebtoken"
 
-import Role from "../user/user.role.model.js"
 import User from "../user/user.model.js"
 
-const generateAccessToken = (id, roles) => {
+const generateAccessToken = (id) => {
   const payload = {
     id,
-    roles,
   }
 
   return jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: "24h",
+    // expiresIn: "24h",
   })
 }
 
@@ -23,12 +21,9 @@ class AuthService {
 
     const hashPassword = await bcryptjs.hash(password, 7)
 
-    const userRole = await Role.findOne({ value: "user" })
-
     await User.create({
       username,
       password: hashPassword,
-      roles: [userRole.value],
     })
 
     return "User created successfully"
@@ -43,14 +38,9 @@ class AuthService {
       message: `Incorrect password`
     }
 
-    const token = generateAccessToken(user._id, user.roles)
+    const token = generateAccessToken(user._id)
 
     return { token }
-  }
-
-  async getUsers() {
-    const users = await User.find({})
-    return users
   }
 }
 
